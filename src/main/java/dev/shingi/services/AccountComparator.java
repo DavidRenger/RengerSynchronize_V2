@@ -6,51 +6,6 @@ import dev.shingi.models.*;
 
 public class AccountComparator {
 
-    public Map<String, List<Customer>> compareAccounts(List<Customer> customers) {
-        // Assuming findUniformAccounts returns Map<String, List<Customer>> instead
-        Map<LedgerAccount, List<Customer>> uniformAccounts = findUniformAccounts(customers);
-        Map<String, Map<Integer, List<Customer>>> mismatchedAccounts = findMismatchedAccounts(customers);
-        Map<Customer, List<LedgerAccount>> uniqueAccounts = findUniqueAccounts(customers);
-
-        // Logic to handle uniform accounts
-        Map<String, List<Customer>> uniformResults = new HashMap<>();
-        for (Map.Entry<LedgerAccount, List<Customer>> uniformEntry : uniformAccounts.entrySet()) {
-            LedgerAccount account = uniformEntry.getKey();
-            String uniqueKey = account.getOmschrijving() + "#" + account.getNummer();
-            uniformResults.put(uniqueKey, uniformEntry.getValue());
-        }
-
-        // Logic to handle mismatched accounts
-        Map<String, List<Customer>> mismatchedResults = new HashMap<>();
-        for (Map.Entry<String, Map<Integer, List<Customer>>> mismatchedEntry : mismatchedAccounts.entrySet()) {
-            String accountName = mismatchedEntry.getKey();
-            for (Map.Entry<Integer, List<Customer>> entry : mismatchedEntry.getValue().entrySet()) {
-                Integer accountNumber = entry.getKey();
-                List<Customer> customersList = entry.getValue();
-                String uniqueKey = accountName + "#" + accountNumber; // Create a unique key for each mismatched account
-                mismatchedResults.put(uniqueKey, customersList);
-            }
-        }
-
-        // Logic to handle unique accounts
-        Map<String, List<Customer>> uniqueResults = new HashMap<>();
-        for (Map.Entry<Customer, List<LedgerAccount>> uniqueEntry : uniqueAccounts.entrySet()) {
-            Customer customer = uniqueEntry.getKey();
-            for (LedgerAccount account : uniqueEntry.getValue()) {
-                String uniqueKey = account.getOmschrijving() + "#" + account.getNummer(); // Create a unique key for each unique account
-                uniqueResults.computeIfAbsent(uniqueKey, k -> new ArrayList<>()).add(customer);
-            }
-        }
-
-        // Combine all the results into a single map
-        Map<String, List<Customer>> comparisonResults = new HashMap<>();
-        comparisonResults.putAll(uniformResults);
-        comparisonResults.putAll(mismatchedResults);
-        comparisonResults.putAll(uniqueResults);
-
-        return comparisonResults;
-    }
-
     public Map<LedgerAccount, List<Customer>> findUniformAccounts(List<Customer> customers) {
         Map<LedgerAccount, List<Customer>> uniformAccounts = new HashMap<>();
         Map<String, Integer> accountFrequency = new HashMap<>();

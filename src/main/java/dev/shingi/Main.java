@@ -70,7 +70,7 @@ public class Main {
         AccountComparator accountComparator = new AccountComparator();
 
         ExcelExporter excelExporter = new ExcelExporter();
-        excelExporter.exportComparisonsToExcel(accountComparator.findUniformAccounts(customers), accountComparator.findMismatchedAccounts(customers), accountComparator.findUniqueAccounts(customers), accountComparator.compareAccounts(customers), fileOutputPath + "\\Comparison results.xlsx");
+        excelExporter.exportComparisonsToExcel(accountComparator.findUniformAccounts(customers), accountComparator.findMismatchedAccounts(customers), accountComparator.findUniqueAccounts(customers), fileOutputPath + "\\Comparison results.xlsx");
     }
 
     public static List<LedgerAccount> convertGrootboekenToLedgerAccounts(List<Grootboek> grootboeken) {
