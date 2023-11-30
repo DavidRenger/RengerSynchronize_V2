@@ -2,9 +2,10 @@ package dev.shingi.models;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
-public class LedgerAccount {
+public class LedgerAccount implements Comparable<LedgerAccount> {
     
     // Information from HTTP request
     String omschrijving;
@@ -40,6 +41,28 @@ public class LedgerAccount {
     public LedgerAccount(String omschrijving, int nummer) {
         this.omschrijving = omschrijving;
         this.nummer = nummer;
+    }
+
+    public LedgerAccount(String omschrijving) {
+        this.omschrijving = omschrijving;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LedgerAccount that = (LedgerAccount) o;
+        return Objects.equals(omschrijving, that.omschrijving);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nummer, omschrijving);
+    }
+    
+    @Override
+    public int compareTo(LedgerAccount other) {
+        return Integer.compare(this.nummer, other.nummer);
     }
     
     @Override

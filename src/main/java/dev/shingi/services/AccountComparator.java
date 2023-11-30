@@ -7,86 +7,118 @@ import dev.shingi.models.*;
 public class AccountComparator {
 
     public Map<LedgerAccount, List<Customer>> findUniformAccounts(List<Customer> customers) {
-        Map<LedgerAccount, List<Customer>> uniformAccounts = new HashMap<>();
-        Map<String, Integer> accountFrequency = new HashMap<>();
-
-        // First pass: build a frequency map of ledger accounts across all customers
+        Map<LedgerAccount, List<Customer>> uniformAccounts = new TreeMap<>();
+        Map<String, Set<Customer>> accountFrequency = new HashMap<>();
+        Map<String, LedgerAccount> accountMapping = new HashMap<>();
+    
+        // First, build a set of customers for each account description
         for (Customer customer : customers) {
             for (LedgerAccount account : customer.getLedgerAccounts()) {
-                accountFrequency.put(account.getOmschrijving(), accountFrequency.getOrDefault(account.getOmschrijving(), 0) + 1);
-                // System.out.println("Adding " + account.getOmschrijving() + " to accountfrequency list. Amount: " + accountFrequency.get(account.getOmschrijving()));
-            }
-        }
-
-        // Second pass: identify uniform accounts - those that appear more than once with the same details
-        for (Customer customer : customers) {
-            for (LedgerAccount account : customer.getLedgerAccounts()) {
-                if (accountFrequency.get(account.getOmschrijving()) > 1) {
-                    uniformAccounts.computeIfAbsent(account, k -> new ArrayList<>()).add(customer);
-                    // System.out.println(account.getOmschrijving() + " is present for both customers.");
+                Set<Customer> customerSet = accountFrequency.computeIfAbsent(account.getOmschrijving(), k -> new HashSet<>());
+                customerSet.add(customer);
+    
+                // Keep a reference to one of the LedgerAccounts for each description
+                if (!accountMapping.containsKey(account.getOmschrijving())) {
+                    accountMapping.put(account.getOmschrijving(), account);
                 }
             }
         }
-
-        return uniformAccounts;
-    }
-
-    public Map<String, Map<Integer, List<Customer>>> findMismatchedAccounts(List<Customer> customers) {
-        Map<String, Map<Integer, List<Customer>>> mismatchedAccounts = new HashMap<>();
-
-        // Iterate over each customer
-        for (Customer customer : customers) {
-            // Then iterate over each ledger account of the customer
-            for (LedgerAccount account : customer.getLedgerAccounts()) {
-                // If the account name is not in the map, initialize it
-                mismatchedAccounts.computeIfAbsent(account.getOmschrijving(), k -> new HashMap<>());
-
-                // Now, get the map of account numbers to customers for this account name
-                Map<Integer, List<Customer>> accountsByNumber = mismatchedAccounts.get(account.getOmschrijving());
-
-                // If the account number is not in the map, initialize the customer list
-                accountsByNumber.computeIfAbsent(account.getNummer(), k -> new ArrayList<>());
-
-                // Finally, add the customer to the list for this account number
-                accountsByNumber.get(account.getNummer()).add(customer);
+    
+        // Now, add accounts to uniformAccounts only if they appear in more than one customer
+        for (Map.Entry<String, Set<Customer>> entry : accountFrequency.entrySet()) {
+            if (entry.getValue().size() > 1) { // Account description appears in multiple customers
+                LedgerAccount account = accountMapping.get(entry.getKey());
+                uniformAccounts.put(account, new ArrayList<>(entry.getValue()));
             }
         }
-
-        // Now we need to remove entries where account numbers are not mismatched, i.e., where only one unique number exists for an account name
-        mismatchedAccounts.entrySet().removeIf(entry -> entry.getValue().size() == 1);
-
-        return mismatchedAccounts;
+    
+        return uniformAccounts;
     }
+    
 
-    public Map<Customer, List<LedgerAccount>> findUniqueAccounts(List<Customer> customers) {
-        Map<Customer, List<LedgerAccount>> uniqueAccounts = new HashMap<>();
-        Map<String, Map<Integer, List<Customer>>> allAccounts = new HashMap<>();
-
-        // Build a map of all accounts across all customers
+    public Map<LedgerAccount, Map<Integer, List<Customer>>> findMismatchedAccounts(List<Customer> customers) {
+        Map<LedgerAccount, Map<Integer, Set<Customer>>> accountTracking = new HashMap<>();
+    
         for (Customer customer : customers) {
             for (LedgerAccount account : customer.getLedgerAccounts()) {
-                allAccounts.computeIfAbsent(account.getOmschrijving(), k -> new HashMap<>())
+                // Using LedgerAccount with only description for the key
+                LedgerAccount keyAccount = new LedgerAccount(account.getOmschrijving());
+    
+                accountTracking.computeIfAbsent(keyAccount, k -> new TreeMap<>())
+                               .computeIfAbsent(account.getNummer(), k -> new HashSet<>())
+                               .add(customer);
+            }
+        }
+    
+        // Filter to keep only those entries where an account description is associated with different numbers across customers
+        Map<LedgerAccount, Map<Integer, List<Customer>>> mismatchedAccounts = new HashMap<>();
+        for (Map.Entry<LedgerAccount, Map<Integer, Set<Customer>>> entry : accountTracking.entrySet()) {
+            if (entry.getValue().size() > 1) {
+                // Convert Set of Customers to List for final output
+                Map<Integer, List<Customer>> mismatchMap = new TreeMap<>();
+                for (Map.Entry<Integer, Set<Customer>> subEntry : entry.getValue().entrySet()) {
+                    mismatchMap.put(subEntry.getKey(), new ArrayList<>(subEntry.getValue()));
+                }
+                mismatchedAccounts.put(entry.getKey(), mismatchMap);
+            }
+        }
+    
+        return mismatchedAccounts;
+    }
+    
+
+    public Map<Customer, List<LedgerAccount>> findUniqueAccounts(List<Customer> customers) {
+        // HashMap to store unique ledger accounts per customer.
+        Map<Customer, List<LedgerAccount>> uniqueAccounts = new HashMap<>();
+        // Map to store all ledger accounts across all customers.
+        Map<String, Map<Integer, List<Customer>>> allAccounts = new HashMap<>();
+    
+        // Build a map of all ledger accounts across all customers.
+        for (Customer customer : customers) {
+            for (LedgerAccount account : customer.getLedgerAccounts()) {
+                // Create nested TreeMap entries for each account description and number.
+                allAccounts.computeIfAbsent(account.getOmschrijving(), k -> new TreeMap<>())
                            .computeIfAbsent(account.getNummer(), k -> new ArrayList<>())
                            .add(customer);
             }
         }
-
-        // Iterate over the map to identify unique accounts
+    
+        // Iterate over the map to identify unique accounts.
         for (Map.Entry<String, Map<Integer, List<Customer>>> accountEntry : allAccounts.entrySet()) {
             for (Map.Entry<Integer, List<Customer>> numberEntry : accountEntry.getValue().entrySet()) {
+                // If this account number is unique to a single customer, identify it as a unique account.
                 if (numberEntry.getValue().size() == 1) {
-                    // This account number is unique to a single customer
                     Customer uniqueCustomer = numberEntry.getValue().get(0);
                     LedgerAccount uniqueLedgerAccount = new LedgerAccount(accountEntry.getKey(), numberEntry.getKey());
                     
-                    // Add this unique ledger account to the map for the customer
+                    // Add this unique ledger account to the map for the customer.
                     uniqueAccounts.computeIfAbsent(uniqueCustomer, k -> new ArrayList<>())
                                   .add(uniqueLedgerAccount);
                 }
             }
         }
-
+    
         return uniqueAccounts;
+    }
+    
+    public Map<Customer, Map<String, List<LedgerAccount>>> findInternalDuplicates(List<Customer> customers) {
+        Map<Customer, Map<String, List<LedgerAccount>>> internalDuplicates = new HashMap<>();
+    
+        for (Customer customer : customers) {
+            Map<String, List<LedgerAccount>> accountMap = new HashMap<>();
+            for (LedgerAccount account : customer.getLedgerAccounts()) {
+                accountMap.computeIfAbsent(account.getOmschrijving(), k -> new ArrayList<>()).add(account);
+            }
+    
+            // Check for duplicates in accountMap and add to internalDuplicates if any found
+            for (Map.Entry<String, List<LedgerAccount>> entry : accountMap.entrySet()) {
+                if (entry.getValue().size() > 1) { // More than one account with the same description
+                    internalDuplicates.computeIfAbsent(customer, k -> new HashMap<>()).put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+    
+        return internalDuplicates;
     }
 
     public Map<String, Integer> findMostFrequentCodingPerAccount(Map<String, Map<Integer, List<Customer>>> mismatchedAccounts) {
@@ -142,6 +174,4 @@ public class AccountComparator {
 
         return mostFrequentCoding;
     }
-
-
 }
