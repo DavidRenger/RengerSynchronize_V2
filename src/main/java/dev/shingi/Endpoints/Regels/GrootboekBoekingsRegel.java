@@ -1,11 +1,10 @@
-package dev.shingi.Endpoints.Regels;
+package dev.shingi.endpoints.regels;
 
-import dev.shingi.Endpoints.Models.Identifier;
-
+import dev.shingi.endpoints.models.*;
 public class GrootboekBoekingsRegel {
     private String omschrijving;
-    private Identifier grootboek;
-    private Identifier kostenplaats;
+    private Grootboek grootboek;
+    private Kostenplaats kostenplaats;
     private double debet;
     private double credit;
     private String btwSoort;
@@ -16,16 +15,16 @@ public class GrootboekBoekingsRegel {
     public void setOmschrijving(String omschrijving) {
         this.omschrijving = omschrijving;
     }
-    public Identifier getGrootboek() {
+    public Grootboek getGrootboek() {
         return grootboek;
     }
-    public void setGrootboek(Identifier grootboek) {
+    public void setGrootboek(Grootboek grootboek) {
         this.grootboek = grootboek;
     }
-    public Identifier getKostenplaats() {
+    public Kostenplaats getKostenplaats() {
         return kostenplaats;
     }
-    public void setKostenplaats(Identifier kostenplaats) {
+    public void setKostenplaats(Kostenplaats kostenplaats) {
         this.kostenplaats = kostenplaats;
     }
     public double getDebet() {

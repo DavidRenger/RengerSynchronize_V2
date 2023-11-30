@@ -1,5 +1,5 @@
 
-package dev.shingi.Endpoints.Models;
+package dev.shingi.endpoints.models;
 
 public class Adres {
     private String contactpersoon;

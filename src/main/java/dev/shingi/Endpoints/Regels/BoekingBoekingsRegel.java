@@ -1,6 +1,6 @@
-package dev.shingi.Endpoints.Regels;
+package dev.shingi.endpoints.regels;
 
-import dev.shingi.Endpoints.Models.Identifier;
+import dev.shingi.endpoints.models.Identifier;
 
 public class BoekingBoekingsRegel {
     private Identifier boekingId;

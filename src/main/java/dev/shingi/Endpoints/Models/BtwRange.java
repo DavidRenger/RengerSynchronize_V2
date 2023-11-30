@@ -1,4 +1,4 @@
-package dev.shingi.Endpoints.Models;
+package dev.shingi.endpoints.models;
 
 public class BtwRange {
     private int from;

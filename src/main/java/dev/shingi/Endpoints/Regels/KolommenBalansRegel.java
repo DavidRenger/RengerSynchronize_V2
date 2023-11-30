@@ -1,8 +1,8 @@
-package dev.shingi.Endpoints.Regels;
+package dev.shingi.endpoints.regels;
 
 import java.util.List;
 
-import dev.shingi.Endpoints.Models.Identifier;
+import dev.shingi.endpoints.models.Identifier;
 
 public class KolommenBalansRegel implements Comparable<KolommenBalansRegel> {
 

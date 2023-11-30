@@ -1,9 +1,9 @@
-package dev.shingi.Endpoints.Models;
+package dev.shingi.endpoints.models;
 
 import java.util.List;
 import java.util.UUID;
 
-import dev.shingi.Endpoints.Regels.KleineOndernemersregeling;
+import dev.shingi.endpoints.regels.KleineOndernemersregeling;
 
 public class Administratie {
     private UUID administratieIdentifier;

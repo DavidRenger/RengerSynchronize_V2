@@ -1,4 +1,4 @@
-package dev.shingi.Utils;
+package dev.shingi.utils;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -7,7 +7,7 @@ import java.util.List;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import dev.shingi.Endpoints.Models.Relatie;
+import dev.shingi.endpoints.models.Relatie;
 
 public class ExcelUtils {
 

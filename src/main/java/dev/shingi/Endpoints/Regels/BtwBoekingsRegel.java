@@ -1,4 +1,4 @@
-package dev.shingi.Endpoints.Regels;
+package dev.shingi.endpoints.regels;
 
 public class BtwBoekingsRegel {
     private double debet;

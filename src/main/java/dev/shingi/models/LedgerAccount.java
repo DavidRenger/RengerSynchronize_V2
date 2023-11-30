@@ -1,14 +1,12 @@
-
-package dev.shingi.endpoints.models;
+package dev.shingi.models;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class Grootboek implements Comparable<Grootboek> {
-
+public class LedgerAccount {
+    
     // Information from HTTP request
-    String modifiedOn;
     String omschrijving;
     Boolean kostenplaatsVerplicht;
     String rekeningCode;
@@ -22,30 +20,33 @@ public class Grootboek implements Comparable<Grootboek> {
     UUID id;
     String uri;
 
-    @Override
-    public int compareTo(Grootboek other) {
-        return Integer.compare(this.nummer, other.nummer);
+    public LedgerAccount(String omschrijving, Boolean kostenplaatsVerplicht, String rekeningCode, Boolean nonactief,
+            Integer nummer, String grootboekfunctie, String grootboekRubriek, List<Map<String, Object>> rgsCodes,
+            List<String> btwSoort, String vatRateCode, UUID id, String uri) {
+        this.omschrijving = omschrijving;
+        this.kostenplaatsVerplicht = kostenplaatsVerplicht;
+        this.rekeningCode = rekeningCode;
+        this.nonactief = nonactief;
+        this.nummer = nummer;
+        this.grootboekfunctie = grootboekfunctie;
+        this.grootboekRubriek = grootboekRubriek;
+        this.rgsCodes = rgsCodes;
+        this.btwSoort = btwSoort;
+        this.vatRateCode = vatRateCode;
+        this.id = id;
+        this.uri = uri;
+    }
+
+    public LedgerAccount(String omschrijving, int nummer) {
+        this.omschrijving = omschrijving;
+        this.nummer = nummer;
     }
     
     @Override
     public String toString() {
+        return omschrijving;
+    }
 
-        return nummer + " " + omschrijving;
-
-        // Everything
-        // return "Grootboek [modifiedOn=" + modifiedOn + ",\ndescription=" + omschrijving + ",\nkostenplaatsVerplicht="
-        //         + kostenplaatsVerplicht + ",\nrekeningCode=" + rekeningCode + ",\nnonactief=" + nonactief + ",\nnummer="
-        //         + nummer + ",\ngrootboekfunctie=" + grootboekfunctie + ",\ngrootboekRubriek=" + grootboekRubriek
-        //         + ",\nrgsCodes=" + rgsCodes + ",\nbtwSoort=" + btwSoort + ",\nvatRateCode=" + vatRateCode + ",\nid=" + id
-        //         + ",\nuri=" + uri + "]";
-    }
-    
-    public String getModifiedOn() {
-        return modifiedOn;
-    }
-    public void setModifiedOn(String modifiedOn) {
-        this.modifiedOn = modifiedOn;
-    }
     public String getOmschrijving() {
         return omschrijving;
     }
@@ -106,16 +107,16 @@ public class Grootboek implements Comparable<Grootboek> {
     public void setVatRateCode(String vatRateCode) {
         this.vatRateCode = vatRateCode;
     }
-    public String getUri() {
-        return uri;
-    }
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
     public UUID getId() {
         return id;
     }
     public void setId(UUID id) {
         this.id = id;
+    }
+    public String getUri() {
+        return uri;
+    }
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 }

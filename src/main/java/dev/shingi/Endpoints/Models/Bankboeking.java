@@ -1,11 +1,9 @@
-package dev.shingi.Endpoints.Models;
+package dev.shingi.endpoints.models;
 
 import java.util.List;
 import java.util.UUID;
 
-import dev.shingi.Endpoints.Regels.BoekingBoekingsRegel;
-import dev.shingi.Endpoints.Regels.BtwBoekingsRegel;
-import dev.shingi.Endpoints.Regels.GrootboekBoekingsRegel;
+import dev.shingi.endpoints.regels.*;
 
 public class Bankboeking {
     private String modifiedOn;
