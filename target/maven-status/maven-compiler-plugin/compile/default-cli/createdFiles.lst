@@ -1,0 +1,11 @@
+dev\shingi\Bankboeking.class
+dev\shingi\GrootboekBoekingsRegel.class
+dev\shingi\SnelstartAuthTest.class
+dev\shingi\Inkoopfacturen.class
+dev\shingi\KolommenBalansComparator.class
+dev\shingi\Identifier.class
+dev\shingi\Grootboek.class
+dev\shingi\BtwBoekingsRegel.class
+dev\shingi\KolommenBalansRegel.class
+dev\shingi\BoekingBoekingsRegel.class
+dev\shingi\GrootboekComparator.class
