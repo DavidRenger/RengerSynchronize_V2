@@ -12,6 +12,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 
+import dev.shingi.Endpoints.Models.Administratie;
+import dev.shingi.Endpoints.Models.Grootboek;
+import dev.shingi.Endpoints.Models.Inkoopfactuur;
+import dev.shingi.Endpoints.Models.Relatie;
+import dev.shingi.Endpoints.Regels.*;
 import dev.shingi.Utils.ExcelUtils;
 
 import org.apache.http.NameValuePair;
@@ -49,11 +54,11 @@ public class Main {
 
     private static void printInkoopFacturen() {
         // Fetch logic
-        List<Inkoopfacturen> inkoopfacturen = test.getModelHttpRequest(bearerToken, Inkoopfacturen.class, "https://b2bapi.snelstart.nl/v2/inkoopfacturen");
+        List<Inkoopfactuur> inkoopfacturen = test.getModelHttpRequest(bearerToken, Inkoopfactuur.class, "https://b2bapi.snelstart.nl/v2/inkoopfacturen");
 
         // Printing logic
         System.out.println("\nOpenstaande inkoopfacturen:");
-        for (Inkoopfacturen inkoopfactuur : inkoopfacturen) {
+        for (Inkoopfactuur inkoopfactuur : inkoopfacturen) {
             if (inkoopfactuur.getOpenstaandSaldo() > 0 || inkoopfactuur.getOpenstaandSaldo() < 0) { 
                 System.out.println(inkoopfactuur);
             }
@@ -66,7 +71,7 @@ public class Main {
         List<KolommenBalansRegel> kolommenBalansList = test.getModelHttpRequest(bearerToken, KolommenBalansRegel.class, "https://b2bapi.snelstart.nl/v2/rapportages/kolommenbalans?start=" + startDate + "&end=" + endDate);
 
         // Sort list
-        Collections.sort(kolommenBalansList, new KolommenBalansComparator());
+        Collections.sort(kolommenBalansList);
 
         // Printing logic
         System.out.println("\nKolommenbalans:");
@@ -92,7 +97,7 @@ public class Main {
 
     private static void printCompanyInfo() {
         // Fetch logic
-        CompanyInfo companyInfo = (CompanyInfo) test.getObjectHttpRequest(bearerToken, CompanyInfo.class, "https://b2bapi.snelstart.nl/v2/companyInfo");
+        Administratie companyInfo = (Administratie) test.getObjectHttpRequest(bearerToken, Administratie.class, "https://b2bapi.snelstart.nl/v2/companyInfo");
 
         // Printing logic
         try {
