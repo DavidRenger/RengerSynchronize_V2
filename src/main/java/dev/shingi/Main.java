@@ -12,8 +12,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 
-import dev.shingi.endpoints.models.*;
-import dev.shingi.endpoints.regels.*;
+import dev.shingi.endpoints.Models.*;
+import dev.shingi.endpoints.Regels.*;
 import dev.shingi.models.*;
 import dev.shingi.services.AccountComparator;
 import dev.shingi.utils.ExcelExporter;
@@ -21,12 +21,9 @@ import dev.shingi.utils.ExcelUtils;
 
 import org.apache.http.NameValuePair;
 
-import java.io.IOException;
+import java.io.*;
+import java.util.*;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 public class Main {
     
@@ -38,39 +35,70 @@ public class Main {
 
     private static final String SUBSCRIPTION_KEY = "328669a875374b17925cbe5e726ef89e";
 
-    // client keys
-    private static final String CREATEYOUROWNROAD = "UGdTdExGdllpUlRnY2FrcUllZ0NaQ3ZyWE03cVJGREtPZnB0LzhFclFwSDkzdnplUkpWK2g3dm8wUlRiMFFHa1ZoYXJRaXV0enNqNVBVbDFEampUK3RNQzZ1WUVkNnZGSUlndTdYVGY5V3hqMnhjQU1IbzRySWpMRm5kbGR1MmUxdnVHcjd5MUsveVdndWsrNjRJck9GU09QQ3NGSVByaEh0QVM5b0h6dkwrc3RFeUtGbGJac29oQ0tYR3lmSUhTRG45YzNvY2x5eWdPWDNvK1lIWDEwNi9nSFdTNUJCclJnTEtCekJNb0FlRE5jSG5NOTVtYUE0Qi9QRDhmc2JWRTpsSWhMaktzT1RqaWQzdXU2YUw4WVVlOUMwUzU2QVZ0eURFQkh1LzhpOFhqcVMvOTJqV2pEamRMSDBYTXZWc0IyUkNBc1k2ZEdsMUQ0aGxRN29zMmN5N3c3dG5xZTY0Y3lRQmpLdm90a1ZMOHhNVEpxcFozb3pldUUxVXpxcTI3SjMvcnVPc3VUcGJnajRYdllkMlJjVm9xeERWZHZVNVlabVNRUExKcXhQRWt4NE04SWxXcjdwb2Uxb0xwSld3Y0tudTNVUmEzRTRUOUdsWStSTjVuT1FoUUNRbjZJL0ErcEowNXdTUXFycGl0NWdETDljT1hBMXhlR0Yxckp6YXZj";
-    private static final String JR_ELEKTRA_BV = "ZkFOY0FmUDNia2tnYzhMMTlXTGtQbzlqWmR0Z3J1a0JjbHp0ek5Nckh3dDk2V1dhR3diWkdFZXpuKzBITC9RbjRwV1Uxbi9NRFY4SnkxRzdyYWZlRlR3MWJobVFEdHBoSjdwWk9OSEdMZ2NEYkpONjMvNk1PMzhyRDFPcEtnNUdGOWVrTW9mSFhPUmp5VTUxVHBKZkYzbnVJNHpadHZMZDZVNmVzekRKNkVpclJaem5rZE9MY1RKbmpySUI1dU1pSkpkTFc3cnIrMlRnTlN3Lzl3SjhKbmwyVlBpTXBMSklxYmlWdjIwd3hVaXY3d25kTGF4L01LVFF0Q2F0Y1lnbDpvcXdYNUQ0K0ZPV0IxYmg5bFpPWkZydFhvVW1GVzQ3ZDlBNGNjandPMno0QzNISUpUbjJTclYrS1psamI5dzhCaC9DNVhzRkc5akNWMUZwYm42SEpEWVB0aDBHTzdWNjdtY0tNeGhabEpkek1zM0pUQVJ0WXNlcUI3OStCU1k5QW9nQURWOEEwSUlrZy80M2IzSEhoN0lnNU9ERXpyQ2VQRHllMjI0b2RvN2g5aU9hWm5iSlE4SHdHV0grNm1xd1I4Rk52VU4xZzRxMURMbVpUNDhodVlBdXMyTGNpY0l6REdUTzEvb0NlQWdGLzJ5VlNMNi8zMzVlRG9CbkVYc0VJ";
-    private static final String RENGER_FINANCE = "Ym9JNkRUUGRKZkJDVGovRVZva2VGd2pUQXhGK1RVdWJ1WTRvZjVGb3lLVFFhbG1LY0ZJaUE1KzVsVXl1VU0zWnBDdHlLNGs4QndrQ29xM1VMZ1djQ25WSU4wdzl6Wit1cnhtZmJNQll3SXh6Wk4vemx6U29weitNN1lmdUQvcnJoMXhvY1pacmdBVldrWk9lWkZwUDhzRVcxbnhHU0N5dHpYOFd3bXRMaHZDaFEwa1ZRaWhKUWkxTEpOUlliUGh1a1NPcGdxb1VyUG5wNjZBY2dVU1FTSWtXNmVpVzJQbGxETTR3Y3hFdllKUVJrQnQzdTFLQ1hWM1pLWkNSYVplYzpMMXJqMlR1L2p1azBFeExudXJvak9GUzNlTWJnZThzb3RNKzhEOThKbzBVblFjVlAzRklWTTlueXJ6VTg4ZzdVVFNyQ1pzRlE5Z3l5RU5vbHdqemRQUDFFdFJEUXJHVlVOMW9zYU52dEVrbGRRL2kzYjJ3c0kwTGlNRmQyem83OTBDa0hTNXJkM1BTVzJaS1lJRGIyMW1RZ3ZFRHc5REsxZGpZN2Z3RUYzUWE3MVBrc050eDd6SEs5cVpKVDRzQzJUZTdLeFlDSldIeG8rQzRhVk5SN0YrOUVvdjlCV2RybjR4L1k2eGNhUHlWQTdIZFpFbHZ4OE8wTGhESVhxYlBL";
-    // private static final String CLIENT_KEY = JR_ELEKTRA_BV;
+    private static CustomerList customerList;
 
     private static final String fileOutputPath = "C:\\Users\\damar\\OneDrive\\Documents\\Programmeren\\Visual Studio Code";
+
+    // Print methods
+    // printInkoopFacturen();
+    // printKolommenBalans("2023-01-01", "2023-12-31");
+    // printGrootboeken();
+    // printCompanyInfo();
+
+    // Get memos
+    // List<Relatie> relaties = printRelatieInfo();
+    // ExcelUtils.writeRelatieMemosToExcel(relaties);
     
     public static void main(String[] args) throws IOException {
-        bearerToken = getBearerToken(CREATEYOUROWNROAD);
-        // Print methods
-        // printInkoopFacturen();
-        // printKolommenBalans("2023-01-01", "2023-12-31");
-        // printGrootboeken();
-        // printCompanyInfo();
+        readCustomers();
 
-        // Get memos
-        // List<Relatie> relaties = printRelatieInfo();
-        // ExcelUtils.writeRelatieMemosToExcel(relaties);
+        int count = 0;
+
+        // Get ledger accounts for all customers with a client key
+        for (Customer customer : customerList.getCustomers()) {
+            if (customer.getClientKey() != null) {
+                bearerToken = getBearerToken(customer.getClientKey());
+                customer.setLedgerAccounts(convertGrootboekenToLedgerAccounts(printGrootboeken()));
+                System.out.println("Read " + ++count + " of " + customerList.getCustomers().size() + " customers.");
+            } else {
+                System.out.println("Skipped " + customer + " - has no key.");
+            }
+            System.out.println("Done reading customers " + customerList.getCustomers().size() + " of " + customerList.getCustomers().size() + ".");
+        }
 
         // Compare ledger accounts
-        Customer c1 = new Customer("Createyourownroad", convertGrootboekenToLedgerAccounts(printGrootboeken()));
-        bearerToken = getBearerToken(JR_ELEKTRA_BV);
-        Customer c2 = new Customer("JR Elektra B.V.", convertGrootboekenToLedgerAccounts(printGrootboeken()));
+        // AccountComparator accountComparator = new AccountComparator();
 
-        List<Customer> customers = new ArrayList<>();
-        customers.add(c1);
-        customers.add(c2);
+        // ExcelExporter excelExporter = new ExcelExporter();
+        // excelExporter.exportComparisonsToExcel(
+        //     accountComparator.findUniformAccounts(customerList.getCustomers()), 
+        //     accountComparator.findMismatchedAccounts(customerList.getCustomers()), 
+        //     accountComparator.findUniqueAccounts(customerList.getCustomers()), 
+        //     accountComparator.findInternalDuplicates(customerList.getCustomers()), 
+        //     fileOutputPath + "\\Comparison results.xlsx");
+    }
 
-        AccountComparator accountComparator = new AccountComparator();
+    private static void readCustomers() throws FileNotFoundException {
+        Scanner sc = new Scanner(new File("RengerConnect/Client keys.txt"));
+        Scanner lineScanner;
 
-        ExcelExporter excelExporter = new ExcelExporter();
-        excelExporter.exportComparisonsToExcel(accountComparator.findUniformAccounts(customers), accountComparator.findMismatchedAccounts(customers), accountComparator.findUniqueAccounts(customers), accountComparator.findInternalDuplicates(customers), fileOutputPath + "\\Comparison results.xlsx");
+        customerList = new CustomerList();
+
+        while (sc.hasNextLine()) {
+            String customerName;
+            String clientKey = null;
+            lineScanner = new Scanner(sc.nextLine());
+            lineScanner.useDelimiter(" = ");
+
+            customerName = lineScanner.next();
+            if (lineScanner.hasNext()) {
+                clientKey = lineScanner.next();
+            }
+
+            Customer customer = new Customer(customerName, clientKey);
+            System.out.println(customer);
+            customerList.getCustomers().add(customer);
+        }
     }
 
     public static List<LedgerAccount> convertGrootboekenToLedgerAccounts(List<Grootboek> grootboeken) {
@@ -120,10 +148,10 @@ public class Main {
         Collections.sort(grootboeken);
 
         // Printing logic
-        // System.out.println("\nGrootboeken:");
-        // for (Grootboek grootboek : grootboeken) {
-        //     System.out.println(grootboek);
-        // }
+        System.out.println("\nGrootboeken:");
+        for (Grootboek grootboek : grootboeken) {
+            System.out.println(grootboek);
+        }
 
         return grootboeken;
     }
