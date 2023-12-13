@@ -1,5 +1,6 @@
 package dev.shingi.models;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -21,6 +22,9 @@ public class LedgerAccount implements Comparable<LedgerAccount> {
     UUID id;
     String uri;
 
+    int uniformityPercentage;
+    List<Customer> customers;
+
     public LedgerAccount(String omschrijving, Boolean kostenplaatsVerplicht, String rekeningCode, Boolean nonactief,
             Integer nummer, String grootboekfunctie, String grootboekRubriek, List<Map<String, Object>> rgsCodes,
             List<String> btwSoort, String vatRateCode, UUID id, String uri) {
@@ -36,6 +40,9 @@ public class LedgerAccount implements Comparable<LedgerAccount> {
         this.vatRateCode = vatRateCode;
         this.id = id;
         this.uri = uri;
+
+        uniformityPercentage = 0;
+        customers = new ArrayList<>();
     }
 
     public LedgerAccount(String omschrijving, int nummer) {
@@ -52,7 +59,7 @@ public class LedgerAccount implements Comparable<LedgerAccount> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         LedgerAccount that = (LedgerAccount) o;
-        return Objects.equals(omschrijving, that.omschrijving);
+        return Objects.equals(nummer, that.nummer) && Objects.equals(omschrijving, that.omschrijving);
     }
 
     @Override
@@ -142,4 +149,21 @@ public class LedgerAccount implements Comparable<LedgerAccount> {
     public void setUri(String uri) {
         this.uri = uri;
     }
+
+    public void setUniformityPercentage(int i) {
+        this.uniformityPercentage = i;
+    }
+
+    public int getUniformityPercentage() {
+        return uniformityPercentage;
+    }
+
+    public List<Customer> getCustomers() {
+        return customers;
+    }
+
+    public void setCustomers(List<Customer> customers) {
+        this.customers = customers;
+    }
+
 }
