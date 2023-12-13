@@ -1,15 +1,16 @@
 package dev.shingi;
 
 import dev.shingi.models.*;
-import dev.shingi.services.CustomerReaderExcel;
-import dev.shingi.services.CustomerReaderSnelstart;
+import dev.shingi.services.*;
+import dev.shingi.utils.*;
+
 import java.io.*;
 
 public class Main {
 
     private static CustomerList customerList;
 
-    private static final String fileOutputPath = "C:\\Users\\damar\\OneDrive\\Documents\\Programmeren\\Visual Studio Code";
+    private static final String fileOutputPath = "";
     
     public static void main(String[] args) throws IOException {
         /*
@@ -28,14 +29,14 @@ public class Main {
          * Call the account comparison functionality of the program
          */
         // Compare ledger accounts
-        // AccountComparator accountComparator = new AccountComparator();
+        AccountComparator accountComparator = new AccountComparator(customerList);
 
-        // ExcelExporter excelExporter = new ExcelExporter();
-        // excelExporter.exportComparisonsToExcel(
-        //     accountComparator.findUniformAccounts(customerList.getCustomers()), 
-        //     accountComparator.findMismatchedAccounts(customerList.getCustomers()), 
-        //     accountComparator.findUniqueAccounts(customerList.getCustomers()), 
-        //     accountComparator.findInternalDuplicates(customerList.getCustomers()), 
-        //     fileOutputPath + "\\Comparison results.xlsx");
+        ExcelExporter excelExporter = new ExcelExporter();
+        excelExporter.exportComparisonsToExcel(
+            accountComparator.getDuplicateLedgerAccounts(), 
+            accountComparator.getUniqueLedgerAccounts(), 
+            accountComparator.getMismatchedLedgerAccounts(),
+            accountComparator.getUniformLedgerAccounts(), 
+            fileOutputPath + "\\Comparison results.xlsx");
     }
 }

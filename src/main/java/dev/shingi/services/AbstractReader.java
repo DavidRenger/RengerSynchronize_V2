@@ -39,7 +39,10 @@ public abstract class AbstractReader {
 
             Customer customer = new Customer(customerName, clientKey);
             System.out.println(customer);
-            customerList.getCustomers().add(customer);
+
+            if (customer.getClientKey() != null) {
+                customerList.getCustomers().add(customer);
+            }
         }
 
         return customerList;

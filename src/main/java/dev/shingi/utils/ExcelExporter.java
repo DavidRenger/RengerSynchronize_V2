@@ -13,84 +13,132 @@ import java.util.Map;
 public class ExcelExporter {
 
     public void exportComparisonsToExcel(
-        Map<LedgerAccount, List<Customer>> uniformAccounts,
-        Map<String, Map<Integer, List<Customer>>> mismatchedAccounts,
-        Map<Customer, List<LedgerAccount>> uniqueAccounts,
-        Map<String, List<Customer>> comparisonResults,
+        Map<Customer, Map<String, List<LedgerAccount>>> duplicateLedgerAccounts,
+        List<LedgerAccount> uniqueLedgerAccounts,
+        Map<String, List<LedgerAccount>> mismatchedLedgerAccounts,
+        List<LedgerAccount> uniformLedgerAccounts,
         String filePath) throws IOException {
 
         try (Workbook workbook = new XSSFWorkbook()) {
             // Create sheets
-            Sheet uniformSheet = workbook.createSheet("Uniform Accounts");
-            Sheet mismatchedSheet = workbook.createSheet("Mismatched Accounts");
+            Sheet duplicatesSheet = workbook.createSheet("Duplicates Accounts");
             Sheet uniqueSheet = workbook.createSheet("Unique Accounts");
-            Sheet resultsSheet = workbook.createSheet("Comparison Results");
+            Sheet mismatchedSheet = workbook.createSheet("Mismatched Accounts");
+            Sheet uniformSheet = workbook.createSheet("Uniform Accounts");
 
-            // Populate the Uniform Accounts sheet
-            populateUniformSheet(uniformSheet, uniformAccounts);
-
-            // Populate the Mismatched Accounts sheet
-            populateMismatchedSheet(mismatchedSheet, mismatchedAccounts);
+            // Populate the Duplicate Accounts sheet
+            populateDuplicatesSheet(duplicatesSheet, duplicateLedgerAccounts);
 
             // Populate the Unique Accounts sheet
-            populateUniqueSheet(uniqueSheet, uniqueAccounts);
+            populateUniqueSheet(uniqueSheet, uniqueLedgerAccounts);
 
-            // Populate the Comparison Results sheet
-            populateResultsSheet(resultsSheet, comparisonResults);
+            // Populate the Mismatched Accounts sheet
+            populateMismatchedSheet(mismatchedSheet, mismatchedLedgerAccounts);
+
+            // Populate the Uniform Accounts sheet
+            populateUniformSheet(uniformSheet, uniformLedgerAccounts);
 
             // Write the workbook to a file
             try (FileOutputStream outputStream = new FileOutputStream(filePath)) {
                 workbook.write(outputStream);
+                System.out.println("Finished writing results.");
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("Program failed to write results.");
             }
         }
     }
 
-    private void populateUniformSheet(Sheet sheet, Map<LedgerAccount, List<Customer>> uniformAccounts) {
+    private void populateDuplicatesSheet(Sheet sheet, Map<Customer, Map<String, List<LedgerAccount>>> duplicateLedgerAccounts) {
         int rowNum = 0;
-        for (Map.Entry<LedgerAccount, List<Customer>> entry : uniformAccounts.entrySet()) {
-            Row row = sheet.createRow(rowNum++);
-            row.createCell(0).setCellValue(entry.getKey().getNummer());
-            row.createCell(1).setCellValue(entry.getKey().getOmschrijving());
-            row.createCell(2).setCellValue(customersToString(entry.getValue()));
-        }
-    }
+        // Loop through customers
+        for (Map.Entry<Customer, Map<String, List<LedgerAccount>>> customerEntry : duplicateLedgerAccounts.entrySet()) {
+            Customer customer = customerEntry.getKey();
+            Map<String, List<LedgerAccount>> accounts = customerEntry.getValue();
 
-    private void populateMismatchedSheet(Sheet sheet, Map<String, Map<Integer, List<Customer>>> mismatchedAccounts) {
-        int rowNum = 0;
-        for (Map.Entry<String, Map<Integer, List<Customer>>> entry : mismatchedAccounts.entrySet()) {
-            Row row = sheet.createRow(rowNum++);
-            row.createCell(0).setCellValue(entry.getKey());
-
-            Map<Integer, List<Customer>> subMap = entry.getValue();
-            int cellNum = 1;
-            for (Map.Entry<Integer, List<Customer>> subEntry : subMap.entrySet()) {
-                row.createCell(cellNum++).setCellValue(subEntry.getKey());
-                row.createCell(cellNum++).setCellValue(customersToString(subEntry.getValue()));
+            // Create customer cell
+            sheet.createRow(rowNum++).createCell(0).setCellValue(customer.getName());
+            System.out.println(customer.getName() + " has duplicate ledger accounts:");
+    
+            // Loop through duplicate ledger accounts
+            for (Map.Entry<String, List<LedgerAccount>> accountEntry : accounts.entrySet()) {
+                List<LedgerAccount> ledgerAccounts = accountEntry.getValue();
+    
+                for (LedgerAccount account : ledgerAccounts) {
+                    Row row = sheet.createRow(rowNum++);
+                    row.createCell(1).setCellValue(account.getNummer());
+                    row.createCell(2).setCellValue(account.getOmschrijving());
+                    System.out.println(account.getNummer() + " " + account.getOmschrijving());
+                }
+                rowNum++;
             }
         }
     }
 
-    private void populateUniqueSheet(Sheet sheet, Map<Customer, List<LedgerAccount>> uniqueAccounts) {
+    private void populateUniqueSheet(Sheet sheet, List<LedgerAccount> uniqueLedgerAccounts) {
         int rowNum = 0;
-        for (Map.Entry<Customer, List<LedgerAccount>> entry : uniqueAccounts.entrySet()) {
-            Row row = sheet.createRow(rowNum++);
-            row.createCell(0).setCellValue(entry.getKey().toString());
-            for (LedgerAccount ledgerAccount : entry.getValue()) {
-                row = sheet.createRow(rowNum++);
-                row.createCell(1).setCellValue(ledgerAccount.getNummer());
-                row.createCell(2).setCellValue(ledgerAccount.getOmschrijving());
+        Customer currentCustomer = new Customer("x", "x"); // Initialize with non-existent customer
+        LedgerAccount currentLedgerAccount;
+
+        for (int i = 0; i < uniqueLedgerAccounts.size(); i++) {
+            currentLedgerAccount = uniqueLedgerAccounts.get(i);
+            
+            // Set customer name atop their duplicate ledger accounts
+            if (!currentCustomer.equals(currentLedgerAccount.getCustomers().get(0))) { // Unique ledger accounts only have one associated customer (index: 0)
+                currentCustomer = currentLedgerAccount.getCustomers().get(0);
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(currentCustomer.getName());
             }
+
+            // Write the duplicate ledger accounts
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(1).setCellValue(currentLedgerAccount.getNummer());
+            row.createCell(2).setCellValue(currentLedgerAccount.getOmschrijving());
         }
     }
 
-    private void populateResultsSheet(Sheet sheet, Map<String, List<Customer>> resultsAccounts) {
+    private void populateMismatchedSheet(Sheet sheet, Map<String, List<LedgerAccount>> mismatchedLedgerAccounts) {
         int rowNum = 0;
-        for (Map.Entry<String, List<Customer>> entry : resultsAccounts.entrySet()) {
-            Row row = sheet.createRow(rowNum++);
-            row.createCell(0).setCellValue(entry.getKey().toString());
-            for (Customer customer : entry.getValue()) {
-                row = sheet.createRow(rowNum++);
-                row.createCell(1).setCellValue(customer.getName());
+        for (Map.Entry<String, List<LedgerAccount>> entry : mismatchedLedgerAccounts.entrySet()) {
+            String description = entry.getKey();
+            List<LedgerAccount> accounts = entry.getValue();
+    
+            for (LedgerAccount account : accounts) {
+                Row row = sheet.createRow(rowNum++);
+                int cellCount = 0;
+                row.createCell(cellCount++).setCellValue(description);
+                row.createCell(cellCount++).setCellValue(account.getNummer());
+                row.createCell(cellCount++).setCellValue(customersToString(account.getCustomers()));
+                for (Customer customer : account.getCustomers()) {
+                    row.createCell(cellCount++).setCellValue(customer.getName());
+                }
+            }
+            rowNum++;
+        }
+    }
+
+    private void populateUniformSheet(Sheet sheet, List<LedgerAccount> uniformLedgerAccounts) {
+        int rowNum = 0;
+
+        // Create header row
+        Row row = sheet.createRow(rowNum++);
+        row.createCell(0).setCellValue("Nummer");
+        row.createCell(1).setCellValue("Omschrijving");
+        row.createCell(2).setCellValue("Uniformiteit percentage");
+        row.createCell(3).setCellValue("Klanten met grootboek");
+
+        // Populate rows with ledger account information
+        for (LedgerAccount ledgerAccount : uniformLedgerAccounts) {
+            row = sheet.createRow(rowNum++);
+            int cellCount = 0;
+            row.createCell(cellCount++).setCellValue(ledgerAccount.getNummer());
+            row.createCell(cellCount++).setCellValue(ledgerAccount.getOmschrijving());
+            row.createCell(cellCount++).setCellValue(ledgerAccount.getUniformityPercentage());
+            if (ledgerAccount.getCustomers() != null) {
+                row.createCell(cellCount++).setCellValue(customersToString(ledgerAccount.getCustomers()));
+                for (Customer customer : ledgerAccount.getCustomers()) {
+                    row.createCell(cellCount++).setCellValue(customer.getName());
+                }
             }
         }
     }

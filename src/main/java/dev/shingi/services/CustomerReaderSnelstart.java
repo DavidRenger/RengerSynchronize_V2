@@ -13,10 +13,11 @@ public class CustomerReaderSnelstart extends AbstractReader {
 
         CustomerList customerList = getCustomerList();
 
-        int count = 0;
+        int customerCount = 0;
 
         // Read info for customers
         for (Customer customer : customerList.getCustomers()) {
+            customerCount++;
             
             if (customer.getClientKey() != null) {
                 // Get bearer token
@@ -24,15 +25,15 @@ public class CustomerReaderSnelstart extends AbstractReader {
 
                 // set customer ledger accounts
                 customer.setLedgerAccounts(SnelstartUtils.convertGrootboekenToLedgerAccounts(SnelstartReader.readGrootboeken(bearerToken)));
-
-                System.out.println("Read " + ++count + " of " + customerList.getCustomers().size() + " customers.");
             } else {
                 System.out.println("Skipped " + customer + " - has no key.");
             }
+
+            System.out.println("Read " + customerCount + " of " + customerList.getCustomers().size() + " customers.");
             
-            System.out.println("Done reading customers " + customerList.getCustomers().size() + " of " + customerList.getCustomers().size() + ".");
         }
 
+        System.out.println("Finished reading " + customerCount + " of " + customerList.getCustomers().size() + " had keys to read ledger accounts.");
         return customerList;
     }
 }
