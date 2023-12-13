@@ -4,106 +4,126 @@ import java.util.*;
 
 import dev.shingi.models.*;
 
-public class AccountComparator {private CustomerList customers;
+public class AccountComparator {
+    private CustomerList customers;
     private Map<Customer, Map<String, List<LedgerAccount>>> duplicateLedgerAccounts;
     private List<LedgerAccount> uniqueLedgerAccounts;
     private Map<String, List<LedgerAccount>> mismatchedLedgerAccounts;
     private List<LedgerAccount> uniformLedgerAccounts;
 
     public AccountComparator(CustomerList customers) {
+        System.out.println("Initializing AccountComparator");
+
         this.customers = customers;
 
         // Get all duplicate ledger accounts in the same customer for all customers
         this.duplicateLedgerAccounts = customers.identifyDuplicateLedgerAccounts();
-        
+        System.out.println("Duplicate ledger accounts identified");
+
         // Get all ledger accounts, including setting the list of customers that has each ledger account
         List<LedgerAccount> allLedgerAccounts = getAllLedgerAccounts();
+        System.out.println("All ledger accounts retrieved");
 
         // Identify all ledger account with only one customer. Remove these from allLedgerAccounts and add it to uniqueLedgerAccounts
         this.uniqueLedgerAccounts = identifyUniqueLedgerAccounts(allLedgerAccounts);
+        System.out.println("Unique ledger accounts identified");
 
         // Identify all ledger accounts with the same description but different number. Remove these from allLedgerAccounts and add them to mismatchedLedgerAccounts
         this.mismatchedLedgerAccounts = identifyMismatchedLedgerAccounts(allLedgerAccounts);
+        System.out.println("Mismatched ledger accounts identified");
 
         // The remaining accounts in allLedgerAccounts are at least relatively uniform, having at least two associated customers
         this.uniformLedgerAccounts = allLedgerAccounts;
+        System.out.println("Uniform ledger accounts identified");
 
         computeUniformityPercentages(uniformLedgerAccounts);
-
-        // identifyUniformLedgerAccounts(allLedgerAccounts);
+        System.out.println("Uniformity percentages computed");
     }
 
     private List<LedgerAccount> getAllLedgerAccounts() {
+        System.out.println("Getting all ledger accounts");
         List<LedgerAccount> allLedgerAccounts = new ArrayList<>();
-
-        try { // Some customers do not have ledger accounts, so this will throw a NullPointerException
-            for (Customer customer : customers.getCustomers()) {
-                // For each customer, loop through all their ledger accounts
+    
+        for (Customer customer : customers.getCustomers()) {
+            System.out.println("Processing customer: " + customer);
+            if (customer.getLedgerAccounts() != null) {
                 for (LedgerAccount account : customer.getLedgerAccounts()) {
-                    if (!allLedgerAccounts.contains(account)) {
-                        allLedgerAccounts.add(account);
+                    if (account != null) {
+                        System.out.println("Processing account: " + account);
+                        if (!allLedgerAccounts.contains(account)) {
+                            allLedgerAccounts.add(account);
+                            System.out.println("Added new account: " + account);
+                        }
+                        allLedgerAccounts.get(allLedgerAccounts.indexOf(account)).getCustomers().add(customer);
+                        System.out.println("Added customer to account: " + account);
                     }
-                    allLedgerAccounts.get(allLedgerAccounts.indexOf(account)).getCustomers().add(customer);
                 }
             }
-        } catch (Exception e) {
-
         }
         
         return allLedgerAccounts;
-    }
+    }    
 
     public List<LedgerAccount> identifyUniqueLedgerAccounts(List<LedgerAccount> allLedgerAccounts) {
+        System.out.println("Identifying unique ledger accounts");
         List<LedgerAccount> uniqueLedgerAccounts = new ArrayList<>();
-        for (LedgerAccount ledgerAccount : allLedgerAccounts) {
+        Iterator<LedgerAccount> iterator = allLedgerAccounts.iterator();
+        while (iterator.hasNext()) {
+            LedgerAccount ledgerAccount = iterator.next();
+            System.out.println("Checking account: " + ledgerAccount);
             if (ledgerAccount.getCustomers() != null && ledgerAccount.getCustomers().size() == 1) {
                 uniqueLedgerAccounts.add(ledgerAccount);
-                allLedgerAccounts.remove(ledgerAccount);
+                iterator.remove();
+                System.out.println("Added to unique accounts and removed from allLedgerAccounts: " + ledgerAccount);
             }
         }
-
+    
         return uniqueLedgerAccounts;
-    }
+    }    
 
     private Map<String, List<LedgerAccount>> identifyMismatchedLedgerAccounts(List<LedgerAccount> allLedgerAccounts) {
+        System.out.println("Identifying mismatched ledger accounts");
         Map<String, List<LedgerAccount>> mismatchedLedgerAccounts = new HashMap<>();
     
-        // Create a map with LedgerAccount descriptions and corresponding LedgerAccounts
         Map<String, List<LedgerAccount>> accountMap = new HashMap<>();
         for (LedgerAccount account : allLedgerAccounts) {
+            System.out.println("Processing account: " + account);
             accountMap.computeIfAbsent(account.getOmschrijving(), k -> new ArrayList<>()).add(account);
+            System.out.println("Added to accountMap: " + account);
         }
     
-        // Add only those descriptions to mismatchedLedgerAccounts that have more than one LedgerAccount
+        Set<LedgerAccount> accountsToRemove = new HashSet<>();
+    
         for (Map.Entry<String, List<LedgerAccount>> entry : accountMap.entrySet()) {
-            if (entry.getValue().size() > 1) { // More than one account with the same description
+            if (entry.getValue().size() > 1) {
                 mismatchedLedgerAccounts.put(entry.getKey(), entry.getValue());
-                for (LedgerAccount account : entry.getValue()) {
-                    allLedgerAccounts.remove(account); // Remove all mismatched instances from allLedgerAccounts list
-                }
+                accountsToRemove.addAll(entry.getValue());
+                System.out.println("Added mismatched accounts to removal list: " + entry.getValue());
+            }
+        }
+    
+        Iterator<LedgerAccount> iterator = allLedgerAccounts.iterator();
+        while (iterator.hasNext()) {
+            LedgerAccount currentAccount = iterator.next();
+            if (accountsToRemove.contains(currentAccount)) {
+                iterator.remove();
+                System.out.println("Removed mismatched account from allLedgerAccounts: " + currentAccount);
             }
         }
     
         return mismatchedLedgerAccounts;
-    }
-
-    // public void identifyUniformLedgerAccounts(List<LedgerAccount> allLedgerAccounts) {
-    //     this.uniformLedgerAccounts = new ArrayList<>();
-
-    //     for (LedgerAccount ledgerAccount : allLedgerAccounts) {
-    //         if (ledgerAccount.getCustomers().size() >= customers.getCustomers().size()*uniformityStandard) { // Ledger account matches or exceeds the uniformity standard
-    //             this.uniformLedgerAccounts.add(ledgerAccount);
-    //         }
-    //     }
-    // }
+    }    
 
     private void computeUniformityPercentages(List<LedgerAccount> ledgerAccounts) {
+        System.out.println("Computing uniformity percentages");
         for (LedgerAccount ledgerAccount : ledgerAccounts) {
             if (ledgerAccount.getCustomers() != null) {
-                ledgerAccount.setUniformityPercentage(ledgerAccount.getCustomers().size() / customers.getCustomers().size() * 100);
+                double uniformityPercentage = ((double) ledgerAccount.getCustomers().size() / customers.getCustomers().size()) * 100;
+                ledgerAccount.setUniformityPercentage(uniformityPercentage);
+                System.out.println("Set uniformity percentage for account: " + ledgerAccount + " to " + uniformityPercentage + "%");
             }
         }
-    }
+    }    
 
     public Map<Customer, Map<String, List<LedgerAccount>>> getDuplicateLedgerAccounts() {
         return this.duplicateLedgerAccounts;
@@ -136,60 +156,4 @@ public class AccountComparator {private CustomerList customers;
     public void setUniformLedgerAccounts(List<LedgerAccount> uniformLedgerAccounts) {
         this.uniformLedgerAccounts = uniformLedgerAccounts;
     }
-
-    // public Map<String, Integer> identifyMostFrequentCodingPerAccount(Map<String, Map<Integer, List<Customer>>> mismatchedAccounts) {
-    //     Map<String, Integer> mostFrequentCoding = new HashMap<>();
-
-    //     // Iterate over each account name
-    //     for (Map.Entry<String, Map<Integer, List<Customer>>> accountEntry : mismatchedAccounts.entrySet()) {
-    //         String accountName = accountEntry.getKey();
-    //         Map<Integer, List<Customer>> accountsByNumber = accountEntry.getValue();
-
-    //         // Stream over the entry set of accounts by number to identify the most frequent coding
-    //         Map.Entry<Integer, Integer> mostFrequentEntry = accountsByNumber.entrySet().stream()
-    //                 .max(Comparator.comparingInt(entry -> entry.getValue().size()))
-    //                 .map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), entry.getValue().size()))
-    //                 .orElse(null);
-
-    //         // If there's a result, put it in the map, otherwise handle the case where there's no clear "most frequent"
-    //         if (mostFrequentEntry != null) {
-    //             mostFrequentCoding.put(accountName, mostFrequentEntry.getKey());
-    //         } else {
-    //             // Handle the case where there is no most frequent coding (could be all unique)
-    //             // For example, you might put a placeholder or decide on a policy for this case
-    //         }
-    //     }
-
-    //     return mostFrequentCoding;
-    // }
-
-    // public Map<String, Integer> identifyMostFrequentCodingPerAccount(List<Customer> customers) {
-    //     // This map will hold the account name as key, and a map of account number to their frequency count as value
-    //     Map<String, Map<Integer, Integer>> codingFrequencyMap = new HashMap<>();
-
-    //     // First, build the frequency map
-    //     for (Customer customer : customers) {
-    //         for (LedgerAccount account : customer.getLedgerAccounts()) {
-    //             Map<Integer, Integer> frequencyMap = codingFrequencyMap.computeIfAbsent(account.getOmschrijving(), k -> new HashMap<>());
-    //             frequencyMap.put(account.getNummer(), frequencyMap.getOrDefault(account.getNummer(), 0) + 1);
-    //         }
-    //     }
-
-    //     // This map will hold the account name and the most frequently used account number
-    //     Map<String, Integer> mostFrequentCoding = new HashMap<>();
-
-    //     // Now, determine the most frequent account number for each account name
-    //     for (Map.Entry<String, Map<Integer, Integer>> entry : codingFrequencyMap.entrySet()) {
-    //         String accountName = entry.getKey();
-    //         Map<Integer, Integer> frequencyMap = entry.getValue();
-
-    //         // Determine the account number with the highest frequency for this account name
-    //         int mostFrequentNumber = Collections.max(frequencyMap.entrySet(), Map.Entry.comparingByValue()).getKey();
-    //         mostFrequentCoding.put(accountName, mostFrequentNumber);
-    //     }
-
-    //     return mostFrequentCoding;
-    // }
-
-    
 }

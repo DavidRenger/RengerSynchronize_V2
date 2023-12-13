@@ -22,7 +22,7 @@ public class LedgerAccount implements Comparable<LedgerAccount> {
     UUID id;
     String uri;
 
-    int uniformityPercentage;
+    double uniformityPercentage;
     List<Customer> customers;
 
     public LedgerAccount(String omschrijving, Boolean kostenplaatsVerplicht, String rekeningCode, Boolean nonactief,
@@ -48,10 +48,16 @@ public class LedgerAccount implements Comparable<LedgerAccount> {
     public LedgerAccount(String omschrijving, int nummer) {
         this.omschrijving = omschrijving;
         this.nummer = nummer;
+
+        uniformityPercentage = 0;
+        customers = new ArrayList<>();
     }
 
     public LedgerAccount(String omschrijving) {
         this.omschrijving = omschrijving;
+
+        uniformityPercentage = 0;
+        customers = new ArrayList<>();
     }
 
     @Override
@@ -150,11 +156,11 @@ public class LedgerAccount implements Comparable<LedgerAccount> {
         this.uri = uri;
     }
 
-    public void setUniformityPercentage(int i) {
+    public void setUniformityPercentage(double i) {
         this.uniformityPercentage = i;
     }
 
-    public int getUniformityPercentage() {
+    public double getUniformityPercentage() {
         return uniformityPercentage;
     }
 

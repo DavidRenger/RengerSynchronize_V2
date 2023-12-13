@@ -58,7 +58,7 @@ public class ExcelExporter {
 
             // Create customer cell
             sheet.createRow(rowNum++).createCell(0).setCellValue(customer.getName());
-            System.out.println(customer.getName() + " has duplicate ledger accounts:");
+            // System.out.println(customer.getName() + " has duplicate ledger accounts:");
     
             // Loop through duplicate ledger accounts
             for (Map.Entry<String, List<LedgerAccount>> accountEntry : accounts.entrySet()) {
@@ -68,7 +68,7 @@ public class ExcelExporter {
                     Row row = sheet.createRow(rowNum++);
                     row.createCell(1).setCellValue(account.getNummer());
                     row.createCell(2).setCellValue(account.getOmschrijving());
-                    System.out.println(account.getNummer() + " " + account.getOmschrijving());
+                    // System.out.println(account.getNummer() + " " + account.getOmschrijving());
                 }
                 rowNum++;
             }

@@ -15,7 +15,7 @@ public class Customer {
     
     @Override
     public String toString() {
-        return name + ", key = " + clientKey;
+        return name;
     }
     public String getName() {
         return name;
