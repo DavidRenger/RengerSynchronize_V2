@@ -23,7 +23,7 @@ public abstract class AbstractReader {
     private CustomerList readClientNamesAndKeys() throws FileNotFoundException {
         CustomerList customerList = new CustomerList();
         
-        Scanner sc = new Scanner(new File("RengerConnect/Client keys.txt"));
+        Scanner sc = new Scanner(new File("Client keys.txt"));
         Scanner lineScanner;
 
         while (sc.hasNextLine()) {

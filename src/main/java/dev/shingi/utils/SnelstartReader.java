@@ -66,6 +66,11 @@ public class SnelstartReader {
             System.out.println(companyInfo.getVrijeTekst2());
             System.out.println(companyInfo.getVrijeTekst3());
             System.out.println(companyInfo.getVrijeTekst4());
+
+            // Print names of customers with KNAB account:
+            if (companyInfo.getIban().contains("KNAB")) {
+                System.out.println(companyInfo.getAdministratieNaam() + ": " + companyInfo.getIban());
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
