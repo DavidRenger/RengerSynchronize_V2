@@ -21,6 +21,7 @@ public class SnelstartReader {
         System.out.println("\nGrootboeken:");
         for (Grootboek grootboek : grootboeken) {
             System.out.println(grootboek);
+            System.out.println(grootboek.getRgsCodes());
         }
 
         // Convert Grootboek objects to LedgerAccount objects via a util function in SnelstartUtils and return the list.

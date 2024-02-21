@@ -12,6 +12,7 @@ public class Main {
     // AS WELL AS THE SNELSTARTREADER METHOD THAT IS CALLED IN THE SERVICE CLASS: CustomerSnelstartReader
 
     // THE OPDRACHTOVEREENKOMST INFORMATION IS IN THE RENGERFINANCE ADIMINSTRATION, MEMO FIELDS OF ITS RELATIONS
+    
     private static CustomerList customerList;
 
     private static final String fileOutputPath = "";

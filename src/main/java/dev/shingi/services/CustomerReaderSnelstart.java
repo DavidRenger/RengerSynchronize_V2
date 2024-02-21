@@ -24,15 +24,15 @@ public class CustomerReaderSnelstart extends AbstractReader {
                 String bearerToken = SnelstartAuthentication.getBearerToken(customer.getClientKey());
 
                 // set customer ledger accounts
-                // customer.setLedgerAccounts(SnelstartUtils.convertGrootboekenToLedgerAccounts(SnelstartReader.readGrootboeken(bearerToken)));
+                customer.setLedgerAccounts(SnelstartUtils.convertGrootboekenToLedgerAccounts(SnelstartReader.readGrootboeken(bearerToken)));
 
                 // read customer info
                 // SnelstartReader.readCompanyInfo(bearerToken);
 
                 // read ovk memo's
-                if (customer.getName().equals("Renger Finance")) {
-                    SnelstartReader.readRelatieInfo(bearerToken);
-                }
+                // if (customer.getName().equals("Renger Finance")) {
+                //     SnelstartReader.readRelatieInfo(bearerToken);
+                // }
 
             } else {
                 System.out.println("Skipped " + customer + " - has no key.");
